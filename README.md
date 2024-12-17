@@ -15,17 +15,11 @@ Enjoy!
 
 ## Controls:
 
-  * A - move figure left
-  * D - move figure right
-  * S - move figure down
-  * space - immediately land figure
-  * Q - rotate figure counterclockwise
-  * E - rotate figure clockwise
-
-  * P - pause/unpause
-  * Esc - quit
-  * left, right, up, down, page up, page down -- rotate and zoom camera
-
+  * left/right - move figure left/right
+  * down - land figure
+  * up - rotate figure
+  * space - pause/unpause
+  * esc - quit
 
 ## Make executable (SBCL Only!):
 
