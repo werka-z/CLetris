@@ -2,6 +2,6 @@
 
 (load "~/.sbclrc")
 ;;(require 'asdf)
-;;(asdf:oos 'asdf:load-op :cl-tetris3d)
-(ql:quickload :cl-tetris3d)
-(cl-tetris3d:make-executable)
+;;(asdf:oos 'asdf:load-op :cl-tetris)
+(ql:quickload :cl-tetris)
+(cl-tetris:make-executable)
