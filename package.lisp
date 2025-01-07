@@ -5,6 +5,6 @@
 ;;;; This file released under some license restrictions,
 ;;;; see COPYING file.
 
-(defpackage #:cl-tetris3d
+(defpackage #:cl-tetris
   (:use :cl #:iterate)
   (:export #:run #:make-executable))
