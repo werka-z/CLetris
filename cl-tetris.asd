@@ -7,13 +7,13 @@
 ;;;; This file released under some license restrictions,
 ;;;; see COPYING file.
 
-(defpackage #:cl-tetris3d-asd
+(defpackage #:cl-tetris-asd
   (:use :cl :asdf))
 
-(in-package #:cl-tetris3d-asd)
+(in-package #:cl-tetris-asd)
 
-(defsystem cl-tetris3d
-  :name "cl-tetris3d"
+(defsystem cl-tetris
+  :name "cl-tetris"
   :version "0.0.1"
   :maintainer "Nedokushev Michael <michael.nedokushev@gmail.com>"
   :author "Nedokushev Michael <michael.nedokushev@gmail.com>"
