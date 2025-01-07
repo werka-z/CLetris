@@ -5,7 +5,7 @@
 ;;;; This file released under some license restrictions,
 ;;;; see COPYING file.
 
-(in-package :cl-tetris3d)
+(in-package :cl-tetris)
 
 (defun gl-init (width height)
   (progn
@@ -295,4 +295,4 @@
                (sdl:update-display))))))
 
 (defun make-executable ()
-  #+sbcl (sb-ext:save-lisp-and-die "cl-tetris2d" :toplevel #'cl-tetris3d:run :executable t))
+  #+sbcl (sb-ext:save-lisp-and-die "cl-tetris2d" :toplevel #'cl-tetris:run :executable t))
