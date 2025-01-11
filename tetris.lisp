@@ -13,7 +13,7 @@
     (gl:viewport 0 0 width height)
     (gl:matrix-mode :projection)
     (gl:load-identity)
-    (gl:ortho 0 width 0 height -1 1)
+    (gl:ortho 0 (+ width 80) 0 (+ height 80) -1 1)
     (gl:matrix-mode :modelview)
     (gl:load-identity)))
 
@@ -27,15 +27,15 @@
      (dotimes (w ,w)
        ,@body)))
 
-(defun build-cube (height width)
+(defun build-square (height width)
   (let ((h (/ height 2))
         (w (/ width 2)))
     (gl:push-matrix)
     (gl:with-primitives :quads
-      (gl:vertex (- w) (- h))
-      (gl:vertex (+ w) (- h))
-      (gl:vertex (+ w) (+ h))
-      (gl:vertex (- w) (+ h)))
+      (gl:vertex (* -1 w) (* -1 h))
+      (gl:vertex (* 1 w) (* -1 h))
+      (gl:vertex (* 1 w) (* 1 h))
+      (gl:vertex (* -1 w) (* 1 h)))
     (gl:pop-matrix)))
 
 (defclass figure ()
@@ -47,9 +47,9 @@
 
 (defclass arena ()
   ((width :initarg :width :accessor width :initform 10)
-   (height :initarg :height :accessor height :initform 20)
+   (height :initarg :height :accessor height :initform 18)
    (field :initarg :field 
-          :initform (make-array '(20 10) :initial-element nil)
+          :initform (make-array '(18 10) :initial-element nil)
           :accessor field)))
 
 (defparameter *figures*
@@ -76,21 +76,24 @@
 (defgeneric draw-arena (arena)
   (:method ((arena arena))
     (with-slots (width height field) arena
+      (gl:push-matrix)
+      (gl:translate 40 40 0)
       (do-dotimes-twice (height width)
         (gl:push-matrix)
-        (gl:translate (* w 20) (* h 20) 0)
+        (gl:translate (* w 30) (* h 30) 0)
         (let ((cell (aref field h w)))
-          (when cell
+          (when (not (null cell))
             (gl:polygon-mode :front-and-back :fill)
             (case cell
               (:pink (gl:color 1 0.41 0.71))
               (:violet (gl:color 0.93 0.51 0.93))
               (:blue (gl:color 0 0 1)))
-            (build-cube 18 18)))
+            (build-square 25 25)))
         (gl:color 0.3 0.3 0.3)
         (gl:polygon-mode :front-and-back :line)
-        (build-cube 20 20)
-        (gl:pop-matrix)))))
+        (build-square 25 25)
+        (gl:pop-matrix))
+      (gl:pop-matrix))))
 
 (defgeneric vanish-lines (arena)
   (:method ((arena arena))
@@ -126,6 +129,7 @@
 (defgeneric draw-world (arena figure)
   (:method ((arena arena) (figure figure))
     (gl:clear :color-buffer-bit)
+    ;;(gl:translate (* -1 (/ width 2)) (* -1 (/ height 2)) z)
     (gl:load-identity)
     (draw-arena arena)
     (draw-figure figure arena)
@@ -142,8 +146,8 @@
       (do-dotimes-twice ((array-dimension body 0) (array-dimension body 1))
         (when (= (aref body h w) 1)
           (gl:push-matrix)
-          (gl:translate (+ (* w 20) (* x 20)) (+ (* h 20) (* y 20)) 0)
-          (build-cube 18 18)
+          (gl:translate (+ 40 (* w 30) (* x 30)) (+ (* h 30) (* y 30)) 0)
+          (build-square 25 25)
           (gl:pop-matrix))))))
 
 (defgeneric move-figure (figure arena &key move-sideways)
@@ -209,24 +213,28 @@
       (setf (body figure) (nth choise *figures*))
       figure)))
 
-(defun run (&key (width 480) (height 640) (bpp 32))
+(defun run (&key (width 800) (height 1000) (bpp 32))
   (sdl:with-init ()
-    (unless (sdl:window width height :bpp bpp :opengl t
+    (unless (sdl:window width height
+                        :bpp bpp
+                        :opengl t
+                        :position :centered
+                       ;; :title "Tetris"
                         :opengl-attributes '((:sdl-gl-doublebuffer 1)))
       (error "Unable to create SDL window"))
     (setf (sdl:frame-rate) 40)
     (sdl:enable-key-repeat 50 50)
     (gl-init width height)
 
-    (format t "Key Bindings:~%
-       Left: move left~%
-       Right: move right~%
-       Down: land~%
-       Up: rotate~%
-       Space: pause/unpause~%
-       Esc: quit~%~%")
-    
-    (let* ((arena (make-instance 'arena
+    (format t "Key Bindings:
+       Left:  move left
+       Right: move right
+       Down:  land
+       Up:    rotate
+       Space: pause/unpause
+       Esc:   quit~%
+ Level | Speed | Score~%")
+        (let* ((arena (make-instance 'arena
                                 :width 10
                                 :height 18
                                 :field (make-array '(18 10) :initial-element nil)))
@@ -266,9 +274,10 @@
                (when run
                  (when (> (- (sdl:system-ticks) ticks) (/ 1000 hz))
                    (when (move-figure figure arena)
-                     (if (> (+ (slot-value figure 'y)
+                     (if (and (> (+ (slot-value figure 'y)
                               (array-dimension (slot-value figure 'body) 0))
-                           (slot-value arena 'height))
+                                 (slot-value arena 'height))
+                              (not (zerop (slot-value figure 'y))))
                          (progn
                            (format t "~%Game Over!~%")
                            (sdl:push-quit-event))
@@ -281,13 +290,13 @@
                                (2 (incf score 300) (incf level-score 300))
                                (1 (incf score 100) (incf level-score 100))))
                            (when (> level-score (* hz (* hz 100)))
-                             (format t "~%Level ~d reached!~%" (1+ level))
+                             (format t "~%Level ~d reached!~%" (+ 1 level))
                              (incf hz)
                              (incf level)
                              (setf level-score 0))
                            (setf figure (choose-figure figure arena))
                            (setf (slot-value figure 'color) (random-color))
-                           (format t "Level: ~d | Speed: ~d | Score: ~d~%"
+                           (format t "   ~d   |   ~d   |   ~d~%"
                                    level hz score)
                            (finish-output))))
                    (setf ticks (sdl:system-ticks))))
@@ -295,4 +304,4 @@
                (sdl:update-display))))))
 
 (defun make-executable ()
-  #+sbcl (sb-ext:save-lisp-and-die "cl-tetris2d" :toplevel #'cl-tetris:run :executable t))
+  #+sbcl (sb-ext:save-lisp-and-die "cl-tetris" :toplevel #'cl-tetris:run :executable t))
