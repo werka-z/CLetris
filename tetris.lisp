@@ -152,7 +152,7 @@
       (do-dotimes-twice ((array-dimension body 0) (array-dimension body 1))
         (when (= (aref body h w) 1)
           (gl:push-matrix)
-          (gl:translate (+ 40 (* w 60) (* x 60)) (+ (* h 60) (* y 60)) 0)
+          (gl:translate (+ 40 (* w 60) (* x 60)) (+ 40 (* h 60) (* y 60)) 0)
           (build-square 50 50)
           (gl:pop-matrix))))))
 
@@ -175,7 +175,7 @@
            (floor-collision-p (figure arena)
              (with-slots (x y body) figure
                (with-slots (width height field) arena
-                 (let ((next-y (1- y))
+                 (let ((next-y (- y 1))
                        (figure-h (array-dimension body 0))
                        (figure-w (array-dimension body 1)))
                    (if (< next-y 0)
@@ -211,12 +211,12 @@
 (defgeneric choose-figure (figure arena)
   (:method ((figure figure) (arena arena))
     (setf *random-state* (make-random-state t))
-    (let ((choise (random 7)))
+    (let ((choice (random 7)))
       (with-slots (x y) figure
         (with-slots (width height) arena
           (setf x (1- (floor (/ width 2)))
                 y height)))
-      (setf (body figure) (nth choise *figures*))
+      (setf (body figure) (nth choice *figures*))
       figure)))
 
 (defun run (&key (width 640) (height 1000) (bpp 32))
