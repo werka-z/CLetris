@@ -62,7 +62,7 @@
    (make-array '(1 4) :initial-contents '((1 1 1 1)))
    (make-array '(2 3) :initial-contents '((1 1 1) (0 1 0)))))
 
-(defgeneric rotate-figure (figure)
+(defgeneric rotate-figure-clockwise (figure)
   (:method ((figure figure))
     (with-slots (body) figure
       (let* ((h (array-dimension body 0))
@@ -70,7 +70,7 @@
              (new-body (make-array (list w h))))
         (dotimes (i h)
           (dotimes (j w)
-            (setf (aref new-body j (- w i 1)) (aref body i j)))) ;; change h to w 
+            (setf (aref new-body j (- h i 1)) (aref body i j))))
         (setf body new-body)))))
 
 (defgeneric draw-arena (arena)
@@ -132,7 +132,6 @@
 (defgeneric draw-world (arena figure)
   (:method ((arena arena) (figure figure))
     (gl:clear :color-buffer-bit)
-    ;;(gl:translate (* -1 (/ width 2)) (* -1 (/ height 2)) z)
     (gl:load-identity)
     (draw-arena arena)
     (draw-figure figure arena)
